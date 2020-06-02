@@ -22,9 +22,9 @@ Running just the base `./bin/app` will print out the help menu and examples
 
 ```bash
 # These Wait in the Terminal
-./bin/app -Remind 2s  -Title "Hello World"      # Notifies "Hello World" in 2 Seconds
-./bin/app -r 10m -t "Hello World" -summary "My name is Omar^2"      # Notifies "Hello World" in 10 Minutes
-./bin/app -t "Hello World" -r 10h      # Notifies "Hello World" in 1 Hour
+./bin/app -Remind 2s  -Title "Hello World"                  # Notifies "Hello World" in 2 Seconds
+./bin/app -r 10m -t "Hello World" -m "My name is Omar^2"    # Notifies "Hello World" in 10 Minutes
+./bin/app -t "Hello World" -r 1h                            # Notifies "Hello World" in 1 Hour
 
 # Daemonizing the Program (Run in Background)
 /bin/app -t "Hello World" -r 1s -d
@@ -37,11 +37,11 @@ Running just the base `./bin/app` will print out the help menu and examples
   - `s` = Seconds
   - `m` = Minutes
   - `h` = Hours
-- `-t/-Title` - The String Message in the Notification
-- `-s/-Summary` - The String Summary of Notifcation
+- `-t/-Title` - The String Title in the Notification
+- `-m/-Summary` - The String Summary of Notifcation
 - `-u/-Urgency` - Urgency level of Notification
 - `-i/-Icon` - Image to use as icon for the Notification
-- `-t/-Title` - The String Message in the Notification
+- `-h/-Help` - Display Help Menu
 
 **Argument Flags**
 - `-d/--Daemon` - Daemonizes the Process to run in the background

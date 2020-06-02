@@ -1,74 +1,92 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	// "strings"
 	"time"
-	"flag"
-	"fmt"
 
 	// External Packages
-	"github.com/sevlyar/go-daemon"
 	"github.com/fatih/color"
+	"github.com/sevlyar/go-daemon"
 )
-
 
 // CONFIGURE GLOBAL STD OUTPUT COLORS
 var (
-	errOut  = color.New(color.FgRed).Add(color.Bold)
-	infoOut = color.New(color.FgHiMagenta)
-	stdOut  = color.New()
-	// Obtain Icon Full Path
-	 binPath,_ = filepath.Abs(filepath.Dir(os.Args[0]))
+	errOut     = color.New(color.FgRed).Add(color.Bold)
+	infoOut    = color.New(color.FgHiMagenta)
+	stdOut     = color.New()
+	binPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
 )
 
-
-type commandline_arguments struct{
-	 remind string
-	 title string
-	 summary string
-	 icon string
-	 urgency int
-	 daemon bool
+// Structure for Valid CLI Arguments
+type cliArguments struct {
+	remind   time.Duration
+	title    string
+	summary  string
+	icon     string
+	urgency  int
+	isDaemon bool
+	isHelp   bool
 }
-func parseInput() commandline_arguments{
-	var FlagRemind=flag.String("Remind", "", "Time to Remind")
-	flag.StringVar(FlagRemind,"r", "", "Timer to Remind")
 
-	var FlagTitle=flag.String("Title", "", "Message for title")
-	flag.StringVar(FlagTitle,"t", "", "Message for Title")
+// Parses throught the CLI Arguments
+// Returning necessary Flags
+func parseInput() cliArguments {
+	var FlagRemind = flag.Duration("Remind", time.Duration(math.Pow10(10)), "Time to Remind")
+	flag.DurationVar(FlagRemind, "r", time.Duration(math.Pow10(10)), "Timer to Remind")
 
-	var FlagSummary=flag.String("Summary", "", "Message for summary")
-	flag.StringVar(FlagSummary,"s", "", "Message for summary")
+	var FlagTitle = flag.String("Title", "Timed Notify", "Message for title")
+	flag.StringVar(FlagTitle, "t", "Timed Notify", "Message for Title")
 
-	var FlagIcon=flag.String("Icon", binPath+"/Notification.png", "Custom Icon to use")
-	flag.StringVar(FlagIcon,"i", binPath+"/Notification.png", "Custom Icon to use")
+	var FlagSummary = flag.String("Summary", "<no body>", "Message for summary")
+	flag.StringVar(FlagSummary, "m", "<no body>", "Message for summary")
 
-	var FlagUrgent=flag.Int("Urgency", 2, "Set urgancy level")
+	var FlagIcon = flag.String("Icon", binPath+"/Notification.png", "Custom Icon to use")
+	flag.StringVar(FlagIcon, "i", binPath+"/Notification.png", "Custom Icon to use")
+
+	var FlagUrgent = flag.Int("Urgency", 2, "Set urgancy level")
 	flag.IntVar(FlagUrgent, "u", 2, "Set urgancy level")
 
-	var FlagBool=flag.Bool("Daemon", false, "Daemonize process or not")
+	var FlagBool = flag.Bool("Daemon", false, "Daemonize process or not")
 	flag.BoolVar(FlagBool, "d", false, "Daemonize process or not")
 
+	var FlagHelp = flag.Bool("Help", false, "Displays Help Menu")
+	flag.BoolVar(FlagHelp, "h", false, "Displays Help Menu")
+
 	flag.Parse()
-	flags := commandline_arguments{*FlagRemind, *FlagTitle,*FlagSummary,*FlagIcon,*FlagUrgent,*FlagBool}
+
+	flags := cliArguments{*FlagRemind, *FlagTitle, *FlagSummary, *FlagIcon, *FlagUrgent, *FlagBool, *FlagHelp}
 	return flags
 }
+
 // Prints Help Menu
 func printHelp() {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
 
-	errOut.Println("Two Arguments Required:")
-	infoOut.Println("\t-Remind: [Time {amount(s/m/h)}]")
-	infoOut.Println("\t-Title: [Message]")
+	infoOut.Print("Usage timed-notify:\n\t")
+	fmt.Printf(cyan("timed-notify") + " <SUMMARY> [OPTIONS] - Create a Timed Notification\n")
 
-	infoOut.Println("Examples: ")
-	stdOut.Printf("\tapp %s \n", cyan("-Remind {[Interger][s/m/h]} -Title {message}"))
-	stdOut.Printf("\tapp %s \n", cyan("-Remind 2s -Title \"Hello World\" -Summary \"Here we go!\""))
-	stdOut.Printf("\tapp %s \n", cyan("-Title \"Hello World\" -Remind 2s -Urgency 3"))
+	infoOut.Printf("Help Options:\n")
+	fmt.Printf("\t-h, -Help \t\t\t Displays Help Menu\n")
+
+	infoOut.Printf("\nNotification Options:\n")
+	fmt.Printf("\t-t, -Title \t\t\t Sets the Notification Title\n")
+	fmt.Printf("\t-m, -Summary \t\t\t Sets the Notification Summary\n")
+	fmt.Printf("\t-r, -Remind \t\t\t Sets the Notification Delay Time, Default=10s\n")
+	fmt.Printf("\t-i, -Icon \t\t\t Sets the Notification Icon, Default [" + binPath + "/Notification.png]\n")
+	fmt.Printf("\t-u, -Urgency \t\t\t Sets the Notification Urgency [1=Low, 2=Normal, 3=Critical]\n")
+	fmt.Printf("\t-d, -Daemon \t\t\t Runs Process as a Daemon\n")
+
+	infoOut.Println("\nExamples: ")
+	stdOut.Printf("\ttimed-notify %s \n", cyan("-Remind {[Interger][s/m/h]} -Title {message}"))
+	stdOut.Printf("\ttimed-notify %s \n", cyan("-Remind {[Interger][s/m/h]} -Title {message} -Summary {summary}"))
+	stdOut.Printf("\ttimed-notify %s \n", cyan("-r {[Interger][s/m/h]} -t {title} -m {summary}"))
+	stdOut.Printf("\ttimed-notify %s \n", cyan("-r {[Interger][s/m/h]} -t {title} -m {summary} -u 3"))
 }
 
 // Simple wrapper that returns the conversion of string to int
@@ -82,59 +100,36 @@ func getIntStr(sVal string) int {
 }
 
 func main() {
-	var args = parseInput()
-	iconPath := args.icon
-	Remind := args.remind
-	Summary := args.summary
-	Title := args.title
-	Urgency := args.urgency
-	isDaemon := args.daemon
+	// Parse Arguments
+	args := parseInput()
 
-	// VERIFY ARGUMENTS 
+	// VERIFY ARGUMENTS
+	if args.isHelp { // Print Help Menu
+		printHelp()
+		os.Exit(0)
+	}
+
 	// Title and Reminder must be enabled
-	if(Title ==""){
+	if args.title == "" && args.summary == "" {
+		errOut.Print("Title or Summary of notification MUST be set!\n\n")
 		printHelp()
-		errOut.Println("Title of notification is not set")
-		os.Exit(-1)
-	} else if (Remind == "") {
-		printHelp()
-		errOut.Println("Reminder time is not set")
-		os.Exit(-1)
+		os.Exit(1)
 	}
-	// DETERMINE SLEEP AMOUNT
-	var dTime time.Duration
-	tTypeStr := Remind[len(Remind)-1]
-	waitTime := Remind[:len(Remind)-1]
-	waitType := "Seconds"
 
-	switch tTypeStr {
-	case 's': // Specifically Seconds
-		dTime = time.Duration(getIntStr(waitTime)) * time.Second
-	case 'm': // Minutes
-		dTime = time.Duration(getIntStr(waitTime)) * time.Minute
-		waitType = "Minutes"
-	case 'h': // Hours
-		dTime = time.Duration(getIntStr(waitTime)) * time.Hour
-		waitType = "Hours"
-	default: // Defaulted to Seconds
-		waitTime = os.Args[1]
-		dTime = time.Duration(getIntStr(waitTime)) * time.Second
-	}
-	var urgentLevel="normal"
-	switch Urgency{
+	// DETERMINE URGENCY
+	var urgentLevel = "normal"
+	switch args.urgency {
 	case 1:
-		urgentLevel="low"
+		urgentLevel = "low"
 	case 2:
-		urgentLevel="normal"
+		urgentLevel = "normal"
 	case 3:
-		urgentLevel="critical"
+		urgentLevel = "critical"
 
 	}
-	infoOut.Printf("Waiting for %s %s to output '%s'\n", waitTime, waitType, os.Args[2])
-
 
 	// Deamonize if Flag
-	if isDaemon {
+	if args.isDaemon {
 		infoOut.Println("Daemonized Process, running in the Background 😈")
 
 		// Setup Daemon
@@ -158,10 +153,10 @@ func main() {
 	}
 
 	// SET SLEEP TIME
-	time.Sleep(dTime)
+	infoOut.Printf("🚀 Reminder set for '%s %s' in %.0fs\n", args.summary, args.title, args.remind.Seconds())
+	time.Sleep(args.remind)
 
 	// INITIATE NOTIFICATION
-	fmt.Println("Sending notify-send", Title, Summary, "-i", iconPath, "-u", urgentLevel)
-	cmd := exec.Command("notify-send", Title, Summary, "-i", iconPath, "-u", urgentLevel)
+	cmd := exec.Command("notify-send", args.title, args.summary, "-i", args.icon, "-u", urgentLevel)
 	cmd.Start()
 }
