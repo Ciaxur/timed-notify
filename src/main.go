@@ -21,6 +21,8 @@ var (
 	errOut  = color.New(color.FgRed).Add(color.Bold)
 	infoOut = color.New(color.FgHiMagenta)
 	stdOut  = color.New()
+	// Obtain Icon Full Path
+	 binPath,_ = filepath.Abs(filepath.Dir(os.Args[0]))
 )
 
 
@@ -34,12 +36,23 @@ type commandline_arguments struct{
 }
 func parseInput() commandline_arguments{
 	var FlagRemind=flag.String("Remind", "", "Time to Remind")
+	flag.StringVar(FlagRemind,"r", "", "Timer to Remind")
+
 	var FlagTitle=flag.String("Title", "", "Message for title")
+	flag.StringVar(FlagTitle,"t", "", "Message for Title")
+
 	var FlagSummary=flag.String("Summary", "", "Message for summary")
-	binPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	flag.StringVar(FlagSummary,"s", "", "Message for summary")
+
 	var FlagIcon=flag.String("Icon", binPath+"/Notification.png", "Custom Icon to use")
+	flag.StringVar(FlagIcon,"i", binPath+"/Notification.png", "Custom Icon to use")
+
 	var FlagUrgent=flag.Int("Urgency", 2, "Set urgancy level")
+	flag.IntVar(FlagUrgent, "u", 2, "Set urgancy level")
+
 	var FlagBool=flag.Bool("Daemon", false, "Daemonize process or not")
+	flag.BoolVar(FlagBool, "d", false, "Daemonize process or not")
+
 	flag.Parse()
 	flags := commandline_arguments{*FlagRemind, *FlagTitle,*FlagSummary,*FlagIcon,*FlagUrgent,*FlagBool}
 	return flags
@@ -53,9 +66,9 @@ func printHelp() {
 	infoOut.Println("\t-Title: [Message]")
 
 	infoOut.Println("Examples: ")
-	stdOut.Printf("\tapp %s \n", cyan("-Remind {%ds} -Title {message}"))
-	stdOut.Printf("\tapp %s \n", cyan("-Remind 2s -Title \"Hello World\""))
-	stdOut.Printf("\tapp %s \n", cyan("-Title \"Hello World\" -Remind 2s"))
+	stdOut.Printf("\tapp %s \n", cyan("-Remind {[Interger][s/m/h]} -Title {message}"))
+	stdOut.Printf("\tapp %s \n", cyan("-Remind 2s -Title \"Hello World\" -Summary \"Here we go!\""))
+	stdOut.Printf("\tapp %s \n", cyan("-Title \"Hello World\" -Remind 2s -Urgency 3"))
 }
 
 // Simple wrapper that returns the conversion of string to int
@@ -119,8 +132,6 @@ func main() {
 	}
 	infoOut.Printf("Waiting for %s %s to output '%s'\n", waitTime, waitType, os.Args[2])
 
-	// Obtain Icon Full Path
-	binPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 
 	// Deamonize if Flag
 	if isDaemon {
