@@ -8,7 +8,7 @@ import (
 	// "strings"
 	"time"
 	"flag"
-	// "fmt"
+	"fmt"
 
 	// External Packages
 	"github.com/sevlyar/go-daemon"
@@ -36,8 +36,9 @@ func parseInput() commandline_arguments{
 	var FlagRemind=flag.String("Remind", "", "Time to Remind")
 	var FlagTitle=flag.String("Title", "", "Message for title")
 	var FlagSummary=flag.String("Summary", "", "Message for summary")
-	var FlagIcon=flag.String("Icon", "", "Custom Icon to use")
-	var FlagUrgent=flag.Int("Urgency", 1, "Set urgancy level")
+	binPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	var FlagIcon=flag.String("Icon", binPath+"/Notification.png", "Custom Icon to use")
+	var FlagUrgent=flag.Int("Urgency", 2, "Set urgancy level")
 	var FlagBool=flag.Bool("Daemon", false, "Daemonize process or not")
 	flag.Parse()
 	flags := commandline_arguments{*FlagRemind, *FlagTitle,*FlagSummary,*FlagIcon,*FlagUrgent,*FlagBool}
@@ -48,13 +49,13 @@ func printHelp() {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
 
 	errOut.Println("Two Arguments Required:")
-	infoOut.Println("\tArgument 1: [Time {amount(s/m/h)}]")
-	infoOut.Println("\tArgument 2: [Message]")
+	infoOut.Println("\t-Remind: [Time {amount(s/m/h)}]")
+	infoOut.Println("\t-Title: [Message]")
 
 	infoOut.Println("Examples: ")
-	stdOut.Printf("\tapp %s \n", cyan("{time[s/m/h]} {message}"))
-	stdOut.Printf("\tapp %s \n", cyan("2s \"Hello World\""))
-	stdOut.Printf("\tapp %s \n", cyan("2 \"Hello World\""))
+	stdOut.Printf("\tapp %s \n", cyan("-Remind {%ds} -Title {message}"))
+	stdOut.Printf("\tapp %s \n", cyan("-Remind 2s -Title \"Hello World\""))
+	stdOut.Printf("\tapp %s \n", cyan("-Title \"Hello World\" -Remind 2s"))
 }
 
 // Simple wrapper that returns the conversion of string to int
@@ -69,11 +70,11 @@ func getIntStr(sVal string) int {
 
 func main() {
 	var args = parseInput()
-	// Icon := args.icon
+	iconPath := args.icon
 	Remind := args.remind
-	// Summary := args.summary
+	Summary := args.summary
 	Title := args.title
-	// Urgency := args.urgency
+	Urgency := args.urgency
 	isDaemon := args.daemon
 
 	// VERIFY ARGUMENTS 
@@ -89,8 +90,8 @@ func main() {
 	}
 	// DETERMINE SLEEP AMOUNT
 	var dTime time.Duration
-	tTypeStr := Remind[len(os.Args[1])-1]
-	waitTime := Remind[:len(os.Args[1])-1]
+	tTypeStr := Remind[len(Remind)-1]
+	waitTime := Remind[:len(Remind)-1]
 	waitType := "Seconds"
 
 	switch tTypeStr {
@@ -106,11 +107,20 @@ func main() {
 		waitTime = os.Args[1]
 		dTime = time.Duration(getIntStr(waitTime)) * time.Second
 	}
+	var urgentLevel="normal"
+	switch Urgency{
+	case 1:
+		urgentLevel="low"
+	case 2:
+		urgentLevel="normal"
+	case 3:
+		urgentLevel="critical"
+
+	}
 	infoOut.Printf("Waiting for %s %s to output '%s'\n", waitTime, waitType, os.Args[2])
 
 	// Obtain Icon Full Path
 	binPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	iconPath := binPath + "/Notification.png"
 
 	// Deamonize if Flag
 	if isDaemon {
@@ -142,6 +152,7 @@ func main() {
 	time.Sleep(dTime)
 
 	// INITIATE NOTIFICATION
-	cmd := exec.Command("notify-send", os.Args[2], "-i", iconPath)
+	fmt.Println("Sending notify-send", Title, Summary, "-i", iconPath, "-u", urgentLevel)
+	cmd := exec.Command("notify-send", Title, Summary, "-i", iconPath, "-u", urgentLevel)
 	cmd.Start()
 }
