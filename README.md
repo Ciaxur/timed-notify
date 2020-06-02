@@ -43,6 +43,7 @@ Running just the base `./bin/app` will print out the help menu and examples
 
 ## Logs and Pid 🧾
 Log File is saved under `bin/timed-notify.log`
+
 PID File is saved under `bin/timed-notify.pid`
 
 ## License 📝
