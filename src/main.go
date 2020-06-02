@@ -5,13 +5,16 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	"strings"
+	// "strings"
 	"time"
+	"flag"
+	// "fmt"
 
+	// External Packages
 	"github.com/sevlyar/go-daemon"
-
 	"github.com/fatih/color"
 )
+
 
 // CONFIGURE GLOBAL STD OUTPUT COLORS
 var (
@@ -20,6 +23,26 @@ var (
 	stdOut  = color.New()
 )
 
+
+type commandline_arguments struct{
+	 remind string
+	 title string
+	 summary string
+	 icon string
+	 urgency int
+	 daemon bool
+}
+func parseInput() commandline_arguments{
+	var FlagRemind=flag.String("Remind", "", "Time to Remind")
+	var FlagTitle=flag.String("Title", "", "Message for title")
+	var FlagSummary=flag.String("Summary", "", "Message for summary")
+	var FlagIcon=flag.String("Icon", "", "Custom Icon to use")
+	var FlagUrgent=flag.Int("Urgency", 1, "Set urgancy level")
+	var FlagBool=flag.Bool("Daemon", false, "Daemonize process or not")
+	flag.Parse()
+	flags := commandline_arguments{*FlagRemind, *FlagTitle,*FlagSummary,*FlagIcon,*FlagUrgent,*FlagBool}
+	return flags
+}
 // Prints Help Menu
 func printHelp() {
 	cyan := color.New(color.FgHiCyan).SprintFunc()
@@ -45,40 +68,29 @@ func getIntStr(sVal string) int {
 }
 
 func main() {
-	// Keep track of Arguments
-	isDaemon := false
-	args := []string{}
+	var args = parseInput()
+	// Icon := args.icon
+	Remind := args.remind
+	// Summary := args.summary
+	Title := args.title
+	// Urgency := args.urgency
+	isDaemon := args.daemon
 
-	// SEPERATE ARGUMENT FLAGS & REGULAR ARGUMENTS
-	for _, elt := range os.Args {
-		// Check for Flags
-		if len(elt) == 2 && elt[0] == '-' { // Make sure argument is a flag
-			if elt == "-d" { // Daemon Flag
-				isDaemon = true
-			} else { // Unknown Flag
-				errOut.Print("Unknown Argument Flag: ")
-				infoOut.Printf("%s\n", elt)
-			}
-		} else {
-			args = append(args, elt)
-		}
-	}
-	os.Args = args // Assign Regular Arugments
-
-	// VERIFY ARGUMENTS (3 Arguments : Prog, Seconds, Message)
-	if len(os.Args) > 1 && strings.ToLower(os.Args[1]) == "help" {
+	// VERIFY ARGUMENTS 
+	// Title and Reminder must be enabled
+	if(Title ==""){
 		printHelp()
-		os.Exit(0)
-	} else if len(os.Args) != 3 {
-		errOut.Println("Not Enough Arguments!")
+		errOut.Println("Title of notification is not set")
+		os.Exit(-1)
+	} else if (Remind == "") {
 		printHelp()
-		os.Exit(1)
+		errOut.Println("Reminder time is not set")
+		os.Exit(-1)
 	}
-
 	// DETERMINE SLEEP AMOUNT
 	var dTime time.Duration
-	tTypeStr := os.Args[1][len(os.Args[1])-1]
-	waitTime := os.Args[1][:len(os.Args[1])-1]
+	tTypeStr := Remind[len(os.Args[1])-1]
+	waitTime := Remind[:len(os.Args[1])-1]
 	waitType := "Seconds"
 
 	switch tTypeStr {
