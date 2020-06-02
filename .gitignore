@@ -1,2 +1,6 @@
 # Build Directories
 bin
+
+# Logs and Stuff
+*.log
+*.pid

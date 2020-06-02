@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sevlyar/go-daemon"
+
 	"github.com/fatih/color"
 )
 
@@ -43,6 +45,26 @@ func getIntStr(sVal string) int {
 }
 
 func main() {
+	// Keep track of Arguments
+	isDaemon := false
+	args := []string{}
+
+	// SEPERATE ARGUMENT FLAGS & REGULAR ARGUMENTS
+	for _, elt := range os.Args {
+		// Check for Flags
+		if len(elt) == 2 && elt[0] == '-' { // Make sure argument is a flag
+			if elt == "-d" { // Daemon Flag
+				isDaemon = true
+			} else { // Unknown Flag
+				errOut.Print("Unknown Argument Flag: ")
+				infoOut.Printf("%s\n", elt)
+			}
+		} else {
+			args = append(args, elt)
+		}
+	}
+	os.Args = args // Assign Regular Arugments
+
 	// VERIFY ARGUMENTS (3 Arguments : Prog, Seconds, Message)
 	if len(os.Args) > 1 && strings.ToLower(os.Args[1]) == "help" {
 		printHelp()
@@ -75,8 +97,34 @@ func main() {
 	infoOut.Printf("Waiting for %s %s to output '%s'\n", waitTime, waitType, os.Args[2])
 
 	// Obtain Icon Full Path
-	iconPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	iconPath += "/Notification.png"
+	binPath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	iconPath := binPath + "/Notification.png"
+
+	// Deamonize if Flag
+	if isDaemon {
+		infoOut.Println("Daemonized Process, running in the Background 😈")
+
+		// Setup Daemon
+		ctx := &daemon.Context{
+			PidFileName: binPath + "/timed-notify.pid",
+			PidFilePerm: 0644,
+			LogFileName: binPath + "/timed-notify.log",
+			LogFilePerm: 0640,
+			WorkDir:     "./",
+			Umask:       027,
+			Args:        os.Args,
+		}
+
+		// Release the DAEMON!
+		d, err := ctx.Reborn()
+		if err != nil {
+			errOut.Printf("Unable to run: %s\n", err)
+		}
+		if d != nil {
+			os.Exit(0)
+		}
+		ctx.Release()
+	}
 
 	// SET SLEEP TIME
 	time.Sleep(dTime)
