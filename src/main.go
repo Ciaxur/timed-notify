@@ -106,8 +106,6 @@ func main() {
 
 		// Setup Daemon
 		ctx := &daemon.Context{
-			PidFileName: binPath + "/timed-notify.pid",
-			PidFilePerm: 0644,
 			LogFileName: binPath + "/timed-notify.log",
 			LogFilePerm: 0640,
 			WorkDir:     "./",
