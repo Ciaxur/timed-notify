@@ -22,24 +22,29 @@ Running just the base `./bin/app` will print out the help menu and examples
 
 ```bash
 # These Wait in the Terminal
-./bin/app 2s  "Hello World"      # Notifies "Hello World" in 2 Seconds
-./bin/app 10m "Hello World"      # Notifies "Hello World" in 10 Minutes
-./bin/app 1h  "Hello World"      # Notifies "Hello World" in 1 Hour
+./bin/app -Remind 2s  -Title "Hello World"      # Notifies "Hello World" in 2 Seconds
+./bin/app -r 10m -t "Hello World" -summary "My name is Omar^2"      # Notifies "Hello World" in 10 Minutes
+./bin/app -t "Hello World" -r 10h      # Notifies "Hello World" in 1 Hour
 
 # Daemonizing the Program (Run in Background)
-./bin/app 2s  "Hello World" -d
+/bin/app -t "Hello World" -r 1s -d
+
 ```
 
 **Expected Parameters**
-- `Param1` - Time to wait to notify, identified as *amount*(s/m/h)
+- `-r/-Remind` - Time to wait to notify, identified as *amount*(s/m/h)
   - `amount` = Integer Value
   - `s` = Seconds
   - `m` = Minutes
   - `h` = Hours
-- `Param2` - The String Message in the Notification
+- `-t/-Title` - The String Message in the Notification
+- `-s/-Summary` - The String Summary of Notifcation
+- `-u/-Urgency` - Urgency level of Notification
+- `-i/-Icon` - Image to use as icon for the Notification
+- `-t/-Title` - The String Message in the Notification
 
 **Argument Flags**
-- `-d` - Daemonizes the Process to run in the background
+- `-d/--Daemon` - Daemonizes the Process to run in the background
 
 ## Logs and Pid 🧾
 Log File is saved under `bin/timed-notify.log`

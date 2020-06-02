@@ -1,5 +1,7 @@
 # Build Directories
 bin
+makefile
+todo.md
 
 # Logs and Stuff
 *.log
