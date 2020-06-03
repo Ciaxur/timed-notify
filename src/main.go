@@ -21,17 +21,19 @@ var (
 	infoOut    = color.New(color.FgHiMagenta)
 	stdOut     = color.New()
 	binPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
+	VERSION    = "1.0.1"
 )
 
 // Structure for Valid CLI Arguments
 type cliArguments struct {
-	remind   time.Duration
-	title    string
-	summary  string
-	icon     string
-	urgency  int
-	isDaemon bool
-	isHelp   bool
+	remind    time.Duration
+	title     string
+	summary   string
+	icon      string
+	urgency   int
+	isDaemon  bool
+	isVersion bool
+	isHelp    bool
 }
 
 // Parses throught the CLI Arguments
@@ -55,12 +57,15 @@ func parseInput() cliArguments {
 	var FlagBool = flag.Bool("Daemon", false, "Daemonize process or not")
 	flag.BoolVar(FlagBool, "d", false, "Daemonize process or not")
 
+	var FlagVersion = flag.Bool("Version", false, "Displays the current timed-notify Version")
+	flag.BoolVar(FlagVersion, "v", false, "Displays the current timed-notify Version")
+
 	var FlagHelp = flag.Bool("Help", false, "Displays Help Menu")
 	flag.BoolVar(FlagHelp, "h", false, "Displays Help Menu")
 
 	flag.Parse()
 
-	flags := cliArguments{*FlagRemind, *FlagTitle, *FlagSummary, *FlagIcon, *FlagUrgent, *FlagBool, *FlagHelp}
+	flags := cliArguments{*FlagRemind, *FlagTitle, *FlagSummary, *FlagIcon, *FlagUrgent, *FlagBool, *FlagVersion, *FlagHelp}
 	return flags
 }
 
@@ -106,6 +111,9 @@ func main() {
 	// VERIFY ARGUMENTS
 	if args.isHelp { // Print Help Menu
 		printHelp()
+		os.Exit(0)
+	} else if args.isVersion { // Print Program Version
+		fmt.Printf("timed-notify Version %s\n", VERSION)
 		os.Exit(0)
 	}
 
