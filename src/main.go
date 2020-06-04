@@ -21,6 +21,7 @@ var (
 	infoOut    = color.New(color.FgHiMagenta)
 	stdOut     = color.New()
 	binPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
+	resPath    = "/usr/share/timed-notify"
 	VERSION    = "1.0.2"
 )
 
@@ -32,6 +33,7 @@ type cliArguments struct {
 	icon      string
 	urgency   int
 	isDaemon  bool
+	isLog     bool
 	isVersion bool
 	isHelp    bool
 }
@@ -48,14 +50,16 @@ func parseInput() cliArguments {
 	var FlagSummary = flag.String("Summary", "<no body>", "Message for summary")
 	flag.StringVar(FlagSummary, "m", "<no body>", "Message for summary")
 
-	var FlagIcon = flag.String("Icon", "/usr/share/timed-notify/res/Notification.png", "Custom Icon to use")
-	flag.StringVar(FlagIcon, "i", "/usr/share/timed-notify/res/Notification.png", "Custom Icon to use")
+	var FlagIcon = flag.String("Icon", resPath+"/res/Notification.png", "Custom Icon to use")
+	flag.StringVar(FlagIcon, "i", resPath+"/res/Notification.png", "Custom Icon to use")
 
 	var FlagUrgent = flag.Int("Urgency", 2, "Set urgancy level")
 	flag.IntVar(FlagUrgent, "u", 2, "Set urgancy level")
 
 	var FlagBool = flag.Bool("Daemon", false, "Daemonize process or not")
 	flag.BoolVar(FlagBool, "d", false, "Daemonize process or not")
+
+	var FlagLog = flag.Bool("Debug", false, "Enables Daemonize log output")
 
 	var FlagVersion = flag.Bool("Version", false, "Displays the current timed-notify Version")
 	flag.BoolVar(FlagVersion, "v", false, "Displays the current timed-notify Version")
@@ -65,7 +69,7 @@ func parseInput() cliArguments {
 
 	flag.Parse()
 
-	flags := cliArguments{*FlagRemind, *FlagTitle, *FlagSummary, *FlagIcon, *FlagUrgent, *FlagBool, *FlagVersion, *FlagHelp}
+	flags := cliArguments{*FlagRemind, *FlagTitle, *FlagSummary, *FlagIcon, *FlagUrgent, *FlagBool, *FlagLog, *FlagVersion, *FlagHelp}
 	return flags
 }
 
@@ -79,6 +83,7 @@ func printHelp() {
 	infoOut.Printf("Help Options:\n")
 	fmt.Printf("\t-h, -Help \t\t\t Displays Help Menu\n")
 	fmt.Printf("\t-v, -Version \t\t\t Displays Version\n")
+	fmt.Printf("\t-Debug \t\t\t Enables Log Output\n")
 
 	infoOut.Printf("\nNotification Options:\n")
 	fmt.Printf("\t-t, -Title \t\t\t Sets the Notification Title\n")
@@ -143,11 +148,16 @@ func main() {
 
 		// Setup Daemon
 		ctx := &daemon.Context{
-			LogFileName: binPath + "/timed-notify.log",
-			LogFilePerm: 0640,
-			WorkDir:     "./",
-			Umask:       027,
-			Args:        os.Args,
+			WorkDir: "./",
+			Umask:   027,
+			Args:    os.Args,
+		}
+
+		// Check if Debug Mode
+		if args.isLog {
+			infoOut.Println("Debug Logs will be saved in: " + binPath)
+			ctx.LogFileName = binPath + "/timed-notify.log"
+			ctx.LogFilePerm = 0640
 		}
 
 		// Release the DAEMON!
