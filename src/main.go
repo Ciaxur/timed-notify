@@ -21,7 +21,7 @@ var (
 	infoOut    = color.New(color.FgHiMagenta)
 	stdOut     = color.New()
 	binPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	VERSION    = "1.0.1"
+	VERSION    = "1.0.2"
 )
 
 // Structure for Valid CLI Arguments
@@ -48,8 +48,8 @@ func parseInput() cliArguments {
 	var FlagSummary = flag.String("Summary", "<no body>", "Message for summary")
 	flag.StringVar(FlagSummary, "m", "<no body>", "Message for summary")
 
-	var FlagIcon = flag.String("Icon", binPath+"/Notification.png", "Custom Icon to use")
-	flag.StringVar(FlagIcon, "i", binPath+"/Notification.png", "Custom Icon to use")
+	var FlagIcon = flag.String("Icon", "/usr/share/timed-notify/res/Notification.png", "Custom Icon to use")
+	flag.StringVar(FlagIcon, "i", "/usr/share/timed-notify/res/Notification.png", "Custom Icon to use")
 
 	var FlagUrgent = flag.Int("Urgency", 2, "Set urgancy level")
 	flag.IntVar(FlagUrgent, "u", 2, "Set urgancy level")
@@ -78,6 +78,7 @@ func printHelp() {
 
 	infoOut.Printf("Help Options:\n")
 	fmt.Printf("\t-h, -Help \t\t\t Displays Help Menu\n")
+	fmt.Printf("\t-v, -Version \t\t\t Displays Version\n")
 
 	infoOut.Printf("\nNotification Options:\n")
 	fmt.Printf("\t-t, -Title \t\t\t Sets the Notification Title\n")

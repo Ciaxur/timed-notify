@@ -8,6 +8,15 @@ Timed Notifications for Linux Notification Daemons
 - [sevylar's go-daemon](https://github.com/sevlyar/go-daemon) - Daemonize Processes
 - [fatih's color](https://github.com/fatih/color) - Colorized Prints
 
+## Installing 💎
+In the `scripts` Directory, there is an [install](scripts/install.sh) and [uninstall](scripts/uninstall.sh) script to help ease the process
+
+```bash
+cd ./scripts && ./install.sh     # Builds and Installs Binary and Resources
+cd ./scripts && ./uninstall.sh   # Removes Binary and Resources
+```
+
+
 ## Build 🔨
 Building the packages using Go
 You can place any `Notification Icon` into the base directory of the binary to enable icon for the notification
