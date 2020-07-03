@@ -8,7 +8,7 @@ sudo mkdir -p $RES/res
 
 # Build Package
 echo "Building Package..."
-cd .. && make build
+cd .. && go get -d ./src && make build
 
 # Copy Binary and Resources
 echo "Copying Resources to '$RES/res/'"
