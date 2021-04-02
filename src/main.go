@@ -57,6 +57,7 @@ func handleInterrupt(pidFile *os.File) {
 	<-c
 	pidFile.Close()
 	os.Remove(pidFile.Name())
+	os.Exit(0)
 }
 
 func main() {
