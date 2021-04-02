@@ -55,6 +55,13 @@ Running just the base `./bin/app` will print out the help menu and examples
 **Argument Flags**
 - `-d/--Daemon` - Daemonizes the Process to run in the background
 
+**Management Options**
+- `-l/--List` - Lists Running/Pending Processes/Daemons
+- `-p/--PidPrint` - Lists Given Pid Information
+- `-k/--Kill` - Terminates Given Pid
+
+
+
 ## Logs and Pid 🧾
 Log File is saved under `bin/timed-notify.log`
 
