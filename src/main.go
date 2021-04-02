@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/signal"
 	"time"
 	"timed-notify/src/Arguments"
 	"timed-notify/src/Config"
+	"timed-notify/src/Management"
 
 	// External Packages
 	"github.com/fatih/color"
@@ -23,7 +26,7 @@ func printHelp() {
 	Config.InfoOut.Printf("Help Options:\n")
 	fmt.Printf("\t-h, -Help \t\t\t Displays Help Menu\n")
 	fmt.Printf("\t-v, -Version \t\t\t Displays Version\n")
-	fmt.Printf("\t-Debug \t\t\t Enables Log Output\n")
+	fmt.Printf("\t-Debug \t\t\t\t Enables Log Output\n")
 
 	Config.InfoOut.Printf("\nNotification Options:\n")
 	fmt.Printf("\t-t, -Title \t\t\t Sets the Notification Title\n")
@@ -33,11 +36,27 @@ func printHelp() {
 	fmt.Printf("\t-u, -Urgency \t\t\t Sets the Notification Urgency [1=Low, 2=Normal, 3=Critical]\n")
 	fmt.Printf("\t-d, -Daemon \t\t\t Runs Process as a Daemon\n")
 
+	Config.InfoOut.Printf("\nManagement Options:\n")
+	fmt.Printf("\t-l, -List \t\t\t Lists Running/Pending Processes/Daemons\n")
+	fmt.Printf("\t-p, -PidPrint \t\t\t Lists Given Pid Information\n")
+	fmt.Printf("\t-k, -Kill \t\t\t Terminates Given Pid\n")
+
 	Config.InfoOut.Println("\nExamples: ")
 	Config.StdOut.Printf("\ttimed-notify %s \n", cyan("-Remind {[Interger][s/m/h]} -Title {message}"))
 	Config.StdOut.Printf("\ttimed-notify %s \n", cyan("-Remind {[Interger][s/m/h]} -Title {message} -Summary {summary}"))
 	Config.StdOut.Printf("\ttimed-notify %s \n", cyan("-r {[Interger][s/m/h]} -t {title} -m {summary}"))
 	Config.StdOut.Printf("\ttimed-notify %s \n", cyan("-r {[Interger][s/m/h]} -t {title} -m {summary} -u 3"))
+}
+
+// Handles Terminating Process Cleanly
+func handleInterrupt(pidFile *os.File) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	// Wait for Interrupt then Clean up
+	<-c
+	pidFile.Close()
+	os.Remove(pidFile.Name())
 }
 
 func main() {
@@ -52,6 +71,9 @@ func main() {
 		fmt.Printf("timed-notify Version %s\n", Config.VERSION)
 		os.Exit(0)
 	}
+
+	// Redirect to Management
+	Management.HandleManagementArgs(args)
 
 	// Title and Reminder must be enabled
 	if args.Title == "" && args.Summary == "" {
@@ -69,8 +91,33 @@ func main() {
 		urgentLevel = "normal"
 	case 3:
 		urgentLevel = "critical"
-
 	}
+
+	// Setup Temp PID File & Directory
+	_ = os.Mkdir(Config.PidDir, os.ModePerm)
+	pidFile, _ := ioutil.TempFile(Config.PidDir, "timed-notify.pid.")
+	timeNow := time.Now()
+
+	// Store Data in Pid File
+	Management.PidFileWrite(&Management.ProcessStatus{
+		PidFilePath: pidFile.Name(),
+		Pid:         os.Getpid(),
+		Reminder: Management.ReminderStatus{
+			RemindIn:  args.Remind,
+			StartTime: timeNow,
+			EndTime:   timeNow.Add(args.Remind),
+		},
+		Notification: Management.NotificationInfo{
+			Title:   args.Title,
+			Summary: args.Summary,
+			Icon:    args.Icon,
+			Urgency: urgentLevel,
+		},
+		Version: Config.VERSION,
+	}, pidFile)
+
+	// Handle Interrups
+	go handleInterrupt(pidFile)
 
 	// Deamonize if Flag
 	if args.IsDaemon {
@@ -78,9 +125,11 @@ func main() {
 
 		// Setup Daemon
 		ctx := &daemon.Context{
-			WorkDir: "./",
-			Umask:   027,
-			Args:    os.Args,
+			WorkDir:     "./",
+			Umask:       027,
+			Args:        os.Args,
+			PidFileName: pidFile.Name(),
+			PidFilePerm: os.ModePerm,
 		}
 
 		// Check if Debug Mode
@@ -108,4 +157,8 @@ func main() {
 	// INITIATE NOTIFICATION
 	cmd := exec.Command("notify-send", args.Title, args.Summary, "-i", args.Icon, "-u", urgentLevel)
 	cmd.Start()
+
+	// Clean up
+	pidFile.Close()
+	os.Remove(pidFile.Name())
 }
