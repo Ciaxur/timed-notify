@@ -6,12 +6,14 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime"
 	"time"
 	"timed-notify/src/Arguments"
 	"timed-notify/src/Config"
 	"timed-notify/src/Management"
 
 	// External Packages
+	gosxnotifier "github.com/deckarep/gosx-notifier"
 	"github.com/fatih/color"
 	"github.com/sevlyar/go-daemon"
 )
@@ -32,7 +34,7 @@ func printHelp() {
 	fmt.Printf("\t-t, -Title \t\t\t Sets the Notification Title\n")
 	fmt.Printf("\t-m, -Summary \t\t\t Sets the Notification Summary\n")
 	fmt.Printf("\t-r, -Remind \t\t\t Sets the Notification Delay Time, Default=10s\n")
-	fmt.Printf("\t-i, -Icon \t\t\t Sets the Notification Icon, Default [" + Config.BinPath + "/Notification.png]\n")
+	fmt.Printf("\t-i, -Icon \t\t\t Sets the Notification Icon, Default [" + Config.ResPath + "/Notification.png]\n")
 	fmt.Printf("\t-u, -Urgency \t\t\t Sets the Notification Urgency [1=Low, 2=Normal, 3=Critical]\n")
 	fmt.Printf("\t-d, -Daemon \t\t\t Runs Process as a Daemon\n")
 
@@ -155,9 +157,21 @@ func main() {
 	Config.InfoOut.Printf("🚀 Reminder set for '%s %s' in %.0fs\n", args.Summary, args.Title, args.Remind.Seconds())
 	time.Sleep(args.Remind)
 
-	// INITIATE NOTIFICATION
-	cmd := exec.Command("notify-send", args.Title, args.Summary, "-i", args.Icon, "-u", urgentLevel)
-	cmd.Start()
+	// INITIATE NOTIFICATION BASED ON PLATFORM
+	if runtime.GOOS == "linux" {
+		cmd := exec.Command("notify-send", args.Title, args.Summary, "-i", args.Icon, "-u", urgentLevel)
+		cmd.Start()
+	} else if runtime.GOOS == "darwin" {
+		notify := gosxnotifier.NewNotification(args.Summary)
+		notify.Title = args.Title
+		notify.Sound = gosxnotifier.Tink
+		notify.Group = "com.ciaxur.time-notify"
+		notify.AppIcon = args.Icon
+		notify.ContentImage = args.Icon
+		notify.Push()
+	} else {
+		fmt.Printf("'%s' Unsupported Platform :(", runtime.GOOS)
+	}
 
 	// Clean up
 	pidFile.Close()

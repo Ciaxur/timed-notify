@@ -3,6 +3,7 @@ package Arguments
 import (
 	"flag"
 	"math"
+	"runtime"
 	"time"
 	"timed-notify/src/Config"
 )
@@ -40,8 +41,13 @@ func ParseInput() CliArguments {
 	var FlagSummary = flag.String("Summary", "<no body>", "Message for summary")
 	flag.StringVar(FlagSummary, "m", "<no body>", "Message for summary")
 
-	var FlagIcon = flag.String("Icon", Config.ResPath+"/res/Notification.png", "Custom Icon to use")
-	flag.StringVar(FlagIcon, "i", Config.ResPath+"/res/Notification.png", "Custom Icon to use")
+	// Default Icon Location
+	if runtime.GOOS == "darwin" { // MacOS Default Shared Path
+		Config.ResPath = "/usr/local/share/timed-notify"
+	}
+
+	var FlagIcon = flag.String("Icon", Config.ResPath+"/Notification.png", "Custom Icon to use")
+	flag.StringVar(FlagIcon, "i", Config.ResPath+"/Notification.png", "Custom Icon to use")
 
 	var FlagUrgent = flag.Int("Urgency", 2, "Set urgancy level")
 	flag.IntVar(FlagUrgent, "u", 2, "Set urgancy level")
