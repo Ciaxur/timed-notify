@@ -1,14 +1,18 @@
-# Timed-Notify
-Timed Notifications for Linux Notification Daemons
+<h1 align="center">
+Timed-Notify
+</h1>
+<p align="center">
+ Timed Notifications for Linux Notification Daemons
+</p>
 
-## Dependencies 📦
+## 📦 Dependencies
 **`timed-notify`** uses Linux's `notify-send` program to send notification information to the systems's Notification Daemon.
 
 **Golang Packages used**
 - [sevylar's go-daemon](https://github.com/sevlyar/go-daemon) - Daemonize Processes
 - [fatih's color](https://github.com/fatih/color) - Colorized Prints
 
-## Installing 💎
+## 💎 Installing
 In the `scripts` Directory, there is an [install](scripts/install.sh) and [uninstall](scripts/uninstall.sh) script to help ease the process
 
 ```bash
@@ -17,7 +21,7 @@ cd ./scripts && ./uninstall.sh   # Removes Binary and Resources
 ```
 
 
-## Build 🔨
+## 🔨 Build
 Building the packages using Go
 You can place any `Notification Icon` into the base directory of the binary to enable icon for the notification
 
@@ -26,7 +30,7 @@ go build -o ./bin/app ./src         # Builds the Entire Program into bin/app
 cp ./res/Notification.png ./bin/    # Copy Default Notification Icon into base directory of app
 ```
 
-## Running 🚀
+## 🚀 Running
 Running just the base `./bin/app` will print out the help menu and examples
 
 ```bash
@@ -62,8 +66,9 @@ Running just the base `./bin/app` will print out the help menu and examples
 
 
 
-## Logs and Pid 🧾
-Log File is saved under `bin/timed-notify.log`
+## 🧾 Logs and Pid
+Log File is saved under `[bin]/timed-notify.log`
+  - `bin`: Where the binary is stored
 
-## License 📝
+## 📝 License
 This project is licensed under [MIT](LICENSE).
