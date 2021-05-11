@@ -2,7 +2,7 @@
 Timed-Notify
 </h1>
 <p align="center">
- Timed Notifications for Linux Notification Daemons
+ Timed Notifications for <b>Mac & Linux</b> Notification Daemons
 </p>
 
 ## 📦 Dependencies
