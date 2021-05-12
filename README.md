@@ -2,6 +2,9 @@
 Timed-Notify
 </h1>
 <p align="center">
+  <img src="res/Bell.png" height=128>
+</p>
+<p align="center">
  Timed Notifications for <b>Mac & Linux</b> Notification Daemons
 </p>
 
