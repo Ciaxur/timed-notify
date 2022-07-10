@@ -46,4 +46,5 @@ fi
 # Proceed with building the binary and copying over the dependent resources.
 echo "Compiling binary."
 go build -o ./$BUILD_DIR/$APP ./cmd/timed-notify
+if [ $? != 0 ]; then echo "Failed to build go package!" && exit 1; fi
 cp ./res/Notification.png ./$BUILD_DIR/
