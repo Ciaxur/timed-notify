@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/ciaxur/timed-notify/v1/pkg/cmd/root"
+	"github.com/ciaxur/timed-notify/v1/pkg/color"
 	"github.com/ciaxur/timed-notify/v1/pkg/iostreams"
 )
 
@@ -13,7 +14,7 @@ func main() {
 	rootCmd := root.NewRootCmd(ioStream)
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(ioStream.Err, err)
+		fmt.Fprintf(ioStream.Err, color.Red("%v"), err)
 		os.Exit(1)
 	}
 	os.Exit(0)

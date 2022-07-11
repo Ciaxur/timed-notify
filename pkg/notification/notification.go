@@ -56,6 +56,19 @@ func NewNotificationFromFile(filePath string) (*Notification, error) {
 	return process, nil
 }
 
+func UrgencyIntToString(urgency int) string {
+	var urgentStr = "normal"
+	switch urgency {
+	case 1:
+		urgentStr = "low"
+	case 2:
+		urgentStr = "normal"
+	case 3:
+		urgentStr = "critical"
+	}
+	return urgentStr
+}
+
 // WriteToFle -
 //  Outputs Notification Structure to given File.
 // @param file - File to be written to.
