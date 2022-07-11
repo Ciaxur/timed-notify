@@ -71,7 +71,7 @@ func handleCreateCommand(ioStream *iostreams.IOStreams, cmd *cobra.Command, args
 
 	// Deamonize if Flag
 	if *isDaemon {
-		fmt.Fprintf(ioStream.Out, color.Magenta("Daemonized Process, running in the Background 😈"))
+		fmt.Fprintln(ioStream.Out, color.Magenta("Daemonized Process, running in the Background 😈"))
 
 		// Setup Daemon
 		ctx := &daemon.Context{
@@ -87,16 +87,19 @@ func handleCreateCommand(ioStream *iostreams.IOStreams, cmd *cobra.Command, args
 		debugFlag := false
 		debugFlag, _ = strconv.ParseBool(debugStr)
 
-		if debugFlag == true {
+		if debugFlag {
 			ctx.LogFileName = config.BinPath + "/timed-notify.log"
 			fmt.Fprintf(ioStream.Out, color.Magenta("Debug logs will be written to: %s"), ctx.LogFileName)
 			ctx.LogFilePerm = 0640
 		}
 
 		// Release the DAEMON!
-		_, err := ctx.Reborn()
+		d, err := ctx.Reborn()
 		if err != nil {
 			return fmt.Errorf("failed to daemonize process: %v", err)
+		}
+		if d != nil {
+			os.Exit(0)
 		}
 		ctx.Release()
 	}
