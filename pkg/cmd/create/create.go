@@ -130,7 +130,7 @@ func NewCreateCommand(ioStream *iostreams.IOStreams) *cobra.Command {
 	}
 
 	title = createCmd.PersistentFlags().StringP("title", "t", "Empty Title", "Notification title")
-	summary = createCmd.PersistentFlags().StringP("summary", "s", "Emtpy Summary", "Notification summary/body")
+	summary = createCmd.PersistentFlags().StringP("summary", "s", "Empty Summary", "Notification summary/body")
 	remind = createCmd.PersistentFlags().DurationP("remind", "r", time.Duration(10*time.Second), "Notificaiton reminder.")
 	icon = createCmd.PersistentFlags().StringP("icon", "i", config.UserResourcePath+"/Notification.png", "Notification icon.")
 	urgency = createCmd.PersistentFlags().IntP("urgency", "u", 2, "Notification urgency (1=low, 2=normal, 3=critical).")
