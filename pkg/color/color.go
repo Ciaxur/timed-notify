@@ -5,9 +5,10 @@ import (
 )
 
 var (
-	magenta = ansi.ColorFunc("magenta")
-	red     = ansi.ColorFunc("red")
-	redBold = ansi.ColorFunc("red+b")
-	gray    = ansi.ColorFunc("black+h")
-	bold    = ansi.ColorFunc("default+b")
+	Bold    = ansi.ColorFunc("default+b")
+	Gray    = ansi.ColorFunc("black+h")
+	Green   = ansi.ColorFunc("green")
+	Magenta = ansi.ColorFunc("magenta")
+	Red     = ansi.ColorFunc("red")
+	RedBold = ansi.ColorFunc("red+b")
 )
