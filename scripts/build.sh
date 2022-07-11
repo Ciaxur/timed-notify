@@ -5,16 +5,18 @@ APP="timed-notify"
 cd $ROOT_DIR
 
 function get_release_name {
-  BRANCH_NAME=`git rev-parse --abbrev-ref HEAD`
   BRANCH_REV=`git rev-parse HEAD`
 
-  # Negate the matched release name, which indicats that the branch name
+  # Get a list of all known tags.
+  MATCHING_TAG=`git show-ref --tags | grep  "$BRANCH_REV"`
+  RELEASE_TAG=`echo $MATCHING_TAG | grep -oE 'v([0-9]+\.){2}([0-9]+)$'`
+
+  # Check on matching pattern, which indicats that the branch name
   # matched the pattern. ie. v1.2.3
-  IS_VALID_RELEASE=$(echo $BRANCH_NAME | grep -Ev '^v(\d+\.){2}(\d+)$')
-  if [[ "$IS_VALID_RELEASE" = "" ]]; then
-    echo $BRANCH_NAME
+  if [[ "$RELEASE_TAG" != "" ]]; then
+    echo $RELEASE_TAG
   else
-    echo $BRANCH_REV | grep -Eo "^(\w){6}"
+    echo dev-$(echo $BRANCH_REV | grep -Eo "^(\w){8}")
   fi
 }
 
