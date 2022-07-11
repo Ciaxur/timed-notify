@@ -14,7 +14,7 @@ func main() {
 	rootCmd := root.NewRootCmd(ioStream)
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(ioStream.Err, color.Red("%v"), err)
+		fmt.Fprintf(ioStream.Err, color.Red("%v\n"), err)
 		os.Exit(1)
 	}
 	os.Exit(0)
